@@ -33,4 +33,7 @@ module type S = sig
       [handle] to zero length. [handle] can be reused. *)
 end
 
-module Make (_ : Mirage_block.S) : S
+module Make (B : Mirage_block.S) : sig
+  include S
+  val connect : ?blocking_factor: int -> B.t -> t Lwt.t
+end

@@ -212,4 +212,14 @@ module Make (B : Mirage_block.S) = struct
       handle.blocks <- List.rev_append new_blocks handle.blocks;
       handle.length <- Int64.(add handle.length (of_int (String.length data)));
       r
+
+  let connect ?(blocking_factor = 2048) b =
+    let+ { sector_size; size_sectors; _ } = B.get_info b in
+    (* if [size_sectors] is not a multiple of [blocking_factor] we lose a number of sectors *)
+    (* TODO: Log *)
+    Logs.warn (fun m ->
+        if Int64.(rem size_sectors (of_int blocking_factor)) <> 0L then
+          m "inaccessible sectors oh no");
+    let allocations = Weak.create Int64.(to_int (div size_sectors (of_int blocking_factor))) in
+    { b; sector_size; allocations; blocking_factor }
 end

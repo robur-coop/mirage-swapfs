@@ -1,0 +1,3 @@
+(library
+ (name swapfs)
+ (libraries lwt mirage-block))

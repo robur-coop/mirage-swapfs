@@ -42,7 +42,9 @@ module Make (B : Mirage_block.S) = struct
   ]
 
   let pp_error ppf = function
-    | _ -> Format.pp_print_string ppf "TODO: some error message" (* FIXME *)
+    | `Block e -> B.pp_error ppf e
+    | `Block_wr e -> B.pp_write_error ppf e
+    | `Out_of_space -> Format.pp_print_string ppf "Not enough space"
 
   open Lwt.Syntax
 
@@ -89,15 +91,18 @@ module Make (B : Mirage_block.S) = struct
         if !remaining = 0 then
           raise_notrace (Done !res);
         if not (Weak.check handle.t.allocations i) then begin
-          decr remaining; res := Int64.of_int i :: !res
+          decr remaining;
+          res := Int64.of_int i :: !res;
+          Weak.set handle.t.allocations i (Some handle)
         end
       done;
       Error `Out_of_space
     with Done res -> Ok res
 
   let sectors_of_block blocking_factor block =
+    let first_sector = Int64.(mul (of_int blocking_factor) block) in
     Seq.init blocking_factor
-      (fun i -> Int64.(add block (of_int i)))
+      (fun i -> Int64.(add first_sector (of_int i)))
 
   let rec sectors_of_blocks blocking_factor sector_offset blocks =
     match sector_offset, blocks with
@@ -115,7 +120,7 @@ module Make (B : Mirage_block.S) = struct
       invalid_arg "negative length";
     if offset < 0L then
       invalid_arg "negative offset";
-    if Int64.(add offset (of_int length)) < handle.length then
+    if Int64.(add offset (of_int length)) > handle.length then
       invalid_arg "out of bounds";
     let res = Bytes.create length in
     let blocks = List.rev handle.blocks in
@@ -161,9 +166,14 @@ module Make (B : Mirage_block.S) = struct
                               (of_int handle.t.sector_size)) in
     let cur_slack = Int64.(rem handle.length block_size) in
     let*? new_blocks =
-      alloc handle 
-        Int64.(to_int (div (add cur_slack (of_int (String.length data)))
+      let remaining_space =
+        if cur_slack = 0L then 0L else Int64.sub block_size cur_slack
+      in
+      let num_new_blocks =
+        Int64.(to_int (div (add (sub (of_int (String.length data)) remaining_space) (pred block_size))
                          block_size))
+      in
+      alloc handle num_new_blocks
       |> Lwt.return
     in
     let touched = 
@@ -190,7 +200,7 @@ module Make (B : Mirage_block.S) = struct
             read handle.t.b sector [ scratch ]
           else Lwt_result.return ()
         in
-        let l = min (handle.t.sector_size - off) (length) in
+        let l = min (handle.t.sector_size - off) length in
         Cstruct.blit_from_string data src_off scratch off l;
         let*? () = write handle.t.b sector [ scratch ] in
         loop 0 (src_off + l) (length - l)

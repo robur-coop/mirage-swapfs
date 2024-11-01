@@ -14,7 +14,7 @@ module Main (B : Mirage_block.S) = struct
   module Swapfs = Swapfs.Make (B)
 
   let fifty_mb =
-    Seq.init (5 (* 0 *) * 1024)
+    Seq.init (50 * 1024)
       (fun _ -> String.make 1024 'E')
 
   let start_with_swap b =

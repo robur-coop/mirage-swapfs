@@ -36,4 +36,9 @@ end
 module Make (B : Mirage_block.S) : sig
   include S
   val connect : ?blocking_factor: int -> B.t -> t Lwt.t
+  (** [connect ~blocking_factor block] is a swap filesystem backed by [block].
+      [blocking_factor] is the minimum number of sectors to allocate. The
+      higher the value the less memory is used by the swap filesystem at the
+      cost of less efficient use of the block device. The default value is 2048
+      which is 1 MiB with a sector size of 512. *)
 end

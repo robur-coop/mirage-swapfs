@@ -1,0 +1,28 @@
+{0 Swapfs %%VERSION%%}
+
+Swapfs is a swap-like filesystem for MirageOS.
+Unlike swap in other operating systems memory has to be moved explicitly to unnamed files.
+The filesystem is backed by a block device.
+New data can only be appended to the unnamed file, but data can be read at any offset of the file.
+
+{1 See {!module-Swapfs}}
+
+The function {!module-Swapfs.module-Make.val-empty} returns a handle to a fresh, empty unnamed file.
+Then {!module-Swapfs.module-Make.val-append} is used to append new data to the file.
+Data can then be read back in chunks with {!module-Swapfs.module-Make.val-get_partial} at arbitrary offsets.
+Once the user is done with the unnamed file they can call {!module-Swapfs.module-Make.val-free} on the handle to free up blocks for use in other handles.
+Handles are hooked up with the garbage collector such that blocks are automatically freed once the handle is garbage collected.
+
+{2 Blocking factor}
+
+If allocations were naïvely tracked per-sector the memory usage of the swap filesystem itself would easily approach the storage capacity of the block device!
+So in order to reduce memory usage by the allocations on the block device are done in [block_factor] sectors at a time.
+The default [blocking_factor] in {!module-Swapfs.module-Make.val-connect} is [2048].
+For a block device with 512 byte sectors this means allocations are tracked in 1 MiB chunks.
+Let's assume the memory usage for bookkeeping is 32 bytes - I don't know the exact number, but likely it's in that order.
+With a [blocking_factor] of 1 we would then use 32 bytes to track a 512 byte block - a 6.25% overhead.
+With a [blocking_factor] of 2048 we would use 32 bytes to track instead a 1 MiB block - the overhead is then roughly 0.003%.
+
+In other words, the higher the blocking factor the less overhead there is in the bookkeeping.
+On the other hand, a higher blocking factor means less efficient usage of the block device.
+In the current implementation, with a fixed blocking factor the bookkeeping overhead is linear in the number of sectors in the block device.

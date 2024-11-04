@@ -5,22 +5,25 @@
 (generate_opam_files true)
 
 (source
- (github reynir/swapfs))
+ (github robur-coop/mirage-swapfs))
 
 (authors "Reynir Björnsson <reynir@reynir.dk>")
 
-(maintainers "Reynir Björnsson <reynir@reynir.dk>")
+(maintainers "Robur Team <team@robur.coop>")
 
-(license LICENSE)
+(license MIT)
 
-(documentation https://url/to/documentation)
+(documentation https://robur-coop.github.io/mirage-swapfs/doc)
 
 (package
  (name swapfs)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml dune mirage-block)
+ (synopsis "Streaming temporary storage for Mirage OS")
+ (description
+   "\| Append-only ephemeral, anonymous files.
+   "\| Swapfs is useful for temporarily putting large data on persistent storage,
+   "\| for example if the data is too large to comfortably sit in memory.
+   "\| The data can then be read back in chunks.
+   )
+ (depends ocaml dune mirage-block lwt logs)
  (tags
-  (topics "to describe" your project)))
-
-; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html
+  (topics org:mirage org:robur swap)))

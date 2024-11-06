@@ -153,7 +153,7 @@ module Make (B : Mirage_block.S) = struct
         (* NOTE: should always be [Some _] due to invariants *)
         let sector = Option.get (disp ()) in
         let*? () = read handle.t.b sector [ scratch ] in
-        let l = min handle.t.sector_size (length - off) in
+        let l = min (handle.t.sector_size - off) length in
         Cstruct.blit_to_bytes scratch off res dest_off l;
         loop 0 (dest_off + l) (length - l)
     in

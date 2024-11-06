@@ -25,5 +25,6 @@
    "\| The data can then be read back in chunks.
    )
  (depends ocaml dune mirage-block lwt logs)
+ (conflicts (result (< 1.5)))
  (tags
   (topics org:mirage org:robur swap)))

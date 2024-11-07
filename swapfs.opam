@@ -20,6 +20,9 @@ depends: [
   "mirage-block"
   "lwt"
   "logs"
+  "alcotest" {with-test}
+  "alcotest-lwt" {with-test}
+  "mirage-block" {with-test}
   "odoc" {with-doc}
 ]
 conflicts: [

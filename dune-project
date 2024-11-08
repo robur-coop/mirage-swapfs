@@ -24,7 +24,14 @@
    "\| for example if the data is too large to comfortably sit in memory.
    "\| The data can then be read back in chunks.
    )
- (depends ocaml dune mirage-block lwt logs)
+ (depends (ocaml (>= 4.14.0))
+          (dune (>= 3.16.0))
+          logs
+          (mirage-block (>= 3.0.0))
+          (lwt (>= 5.7.0))
+          (cstruct (>= 6.0.0))
+          (alcotest (and :with-test (>= 1.0.0)))
+          (alcotest-lwt (and :with-test (>= 1.0.0))))
  (conflicts (result (< 1.5)))
  (tags
   (topics org:mirage org:robur swap)))

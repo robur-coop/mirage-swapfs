@@ -15,8 +15,10 @@ let rng_test_case n s f =
   fun sw () ->
   f sw (Random.State.make [| Lazy.force seed |])
 
-let random_string _g =
-  "hej med dig"
+let random_string g =
+  let len = Random.State.int g (5*1024*1024) in
+  String.init len
+    (fun _ -> char_of_int (Random.State.int g 256))
 
 module Swap = Swapfs.Make(Mem)
 
@@ -48,8 +50,34 @@ let simple _sw g =
   Alcotest.(check (result string alc_error)) "get_partial ok" (Ok oracle) r;
   Lwt.return_unit
 
+let partial_read_and_writes _sw g =
+  let* swap, oracle = make g in
+  let h = Swap.empty swap in
+  let rec write_loop off =
+    if off = String.length oracle then
+      Lwt.return_unit
+    else
+      let l = min (Random.State.int g 16384 + 1) (String.length oracle - off) in
+      let* r = Swap.append h (String.sub oracle off l) in
+      Alcotest.(check (result unit alc_error)) "append ok" (Ok ()) r;
+      write_loop (off + l)
+  in
+  let rec read_loop off =
+    if off = String.length oracle then
+      Lwt.return_unit
+    else
+      let l = min (Random.State.int g 16384 + 1) (String.length oracle - off) in
+      let* r = Swap.get_partial h ~offset:(Int64.of_int off) ~length:l in
+      Alcotest.(check (result string alc_error)) "get_partial" (Ok (String.sub oracle off l)) r;
+      read_loop (off + l)
+  in
+  let* () = write_loop 0 in
+  read_loop 0
+
+
 let oracle_tests = [
   rng_test_case "simple" `Quick simple ;
+  rng_test_case "partial read and writes" `Quick partial_read_and_writes ;
 ]
 
 let tests = [

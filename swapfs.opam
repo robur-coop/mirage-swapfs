@@ -15,14 +15,14 @@ homepage: "https://github.com/robur-coop/mirage-swapfs"
 doc: "https://robur-coop.github.io/mirage-swapfs/doc"
 bug-reports: "https://github.com/robur-coop/mirage-swapfs/issues"
 depends: [
-  "ocaml"
-  "dune" {>= "3.16"}
-  "mirage-block"
-  "lwt"
+  "ocaml" {>= "4.14.0"}
+  "dune" {>= "3.16" & >= "3.16.0"}
   "logs"
-  "alcotest" {with-test}
-  "alcotest-lwt" {with-test}
-  "mirage-block" {with-test}
+  "mirage-block" {>= "3.0.0"}
+  "lwt" {>= "5.7.0"}
+  "cstruct" {>= "6.0.0"}
+  "alcotest" {with-test & >= "1.0.0"}
+  "alcotest-lwt" {with-test & >= "1.0.0"}
   "odoc" {with-doc}
 ]
 conflicts: [

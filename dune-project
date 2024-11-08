@@ -34,4 +34,4 @@
           (alcotest-lwt (and :with-test (>= 1.0.0))))
  (conflicts (result (< 1.5)))
  (tags
-  (topics org:mirage org:robur swap)))
+  (org:mirage org:robur swap)))

@@ -25,7 +25,7 @@
    "\| The data can then be read back in chunks.
    )
  (depends (ocaml (>= 4.14.0))
-          (dune (>= 3.16.0))
+          dune
           logs
           (mirage-block (>= 3.0.0))
           (lwt (>= 5.7.0))

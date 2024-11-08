@@ -96,7 +96,10 @@ module Make (B : Mirage_block.S) = struct
           Weak.set handle.t.allocations i (Some handle)
         end
       done;
-      Error `Out_of_space
+      if !remaining = 0 then
+        Ok !res
+      else
+        Error `Out_of_space
     with Done res -> Ok res
 
   let sectors_of_block blocking_factor block =
